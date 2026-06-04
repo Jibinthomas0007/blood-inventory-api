@@ -13,15 +13,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     
-    // This single line automatically creates the 5 endpoints for GET, POST, PUT, and DELETE
+    // Blood bag management
     Route::apiResource('blood-bags', BloodBagController::class);
     
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-
-    // Analytics & Mathematical Logic Route
-    Route::get('/analytics/temperature-risk', [App\Http\Controllers\AnalyticsController::class, 'getTemperatureRiskReport']);
 
     // Analytics & Mathematical Logic Routes
     Route::get('/analytics/temperature-risk', [App\Http\Controllers\AnalyticsController::class, 'getTemperatureRiskReport']);
