@@ -53,18 +53,22 @@ class Refrigerator extends Model
         $highestTemp = $logs->max('temperature');
         $lowestTemp = $logs->min('temperature');
 
-        // 4: Calculate Total Unsafe Minutes (Anything above 6.0 is warning or critical)
-        $unsafeMinutes = $logs->where('temperature', '>', 6.0)->count();
+        // 4: Calculate Total Unsafe Minutes (Below 2.0 or Above 6.0)
+        // We use the filter() collection method to catch BOTH extremes
+        $unsafeMinutes = $logs->filter(function ($log) {
+            return $log->temperature < 2.0 || $log->temperature > 6.0;
+        })->count();
 
         // 5: Calculate Risk Percentage using the required formula
         $riskPercentage = round(($unsafeMinutes / $totalMinutes) * 100, 2);
 
-        // Determine overall status based on the required conditions
-        $status = 'Safe'; // 2-6 degrees
-        if ($highestTemp > 8.0) {
-            $status = 'Critical'; // Above 8 degrees
-        } elseif ($highestTemp > 6.0) {
-            $status = 'Warning'; // 6-8 degrees
+        // 6: Determine overall status based on both hot and cold conditions
+        $status = 'Safe'; // Strictly 2.0 to 6.0 degrees
+        
+        if ($highestTemp > 8.0 || $lowestTemp < 0.0) {
+            $status = 'Critical'; // Freezing or dangerously hot
+        } elseif ($highestTemp > 6.0 || $lowestTemp < 2.0) {
+            $status = 'Warning'; // Approaching danger zones
         }
 
         return [
